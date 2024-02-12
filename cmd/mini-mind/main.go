@@ -1,11 +1,9 @@
 package main
 
 import (
-	"github.com/adriano-henrique/mini-mind-be/api"
-	"github.com/adriano-henrique/mini-mind-be/internal/database"
+	"github.com/adriano-henrique/mini-mind-be/internal/app"
 )
 
 func main() {
-	database.DatabaseConnect()
-	api.BuildRoutes()
+	app.BuildRoutes()
 }
