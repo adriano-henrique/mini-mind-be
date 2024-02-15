@@ -9,4 +9,6 @@ func nuggetsGroupRouter(baseRouter *gin.RouterGroup) {
 	nuggets := baseRouter.Group("/nuggets")
 
 	nuggets.GET("/all", handler.GetAllNuggets)
+	nuggets.GET("/get/:id", handler.GetNuggetById)
+	nuggets.POST("/create", handler.CreateNugget)
 }

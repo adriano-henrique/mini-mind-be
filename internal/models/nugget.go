@@ -7,24 +7,45 @@ import (
 )
 
 type Nugget struct {
-	ID     int
-	Key    string
-	Value  string
-	UserID int
+	ID     string `json:"id"`
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	UserID string `json:"userID"`
 }
 
-func (nugget *Nugget) Save(db *sql.DB) error {
+func (nugget *Nugget) Save(db *sql.DB) (*Nugget, error) {
 	sqlStatement := `
-		INSERT INTO nuggets (id, key, value, user_id)
-		VALUES ($1, $2, $3, $5)
+		INSERT INTO nuggets (key, value, user_id)
+		VALUES (?, ?, ?)
 	`
-	_, err := db.Exec(sqlStatement, &nugget.ID, &nugget.Key, &nugget.Value, &nugget.UserID)
-
+	result, err := db.Exec(sqlStatement, &nugget.Key, &nugget.Value, &nugget.UserID)
 	if err != nil {
 		fmt.Fprint(os.Stderr, "failed to insert value into table, \n", err)
-		return err
+		return &Nugget{}, err
 	}
-	return nil
+
+	nuggetID, err := result.LastInsertId()
+	if err != nil {
+		fmt.Fprint(os.Stderr, "failed to get recently inserted data, \n", err)
+		return &Nugget{}, err
+	}
+	return FetchNugget(fmt.Sprint(nuggetID), db)
+}
+
+func FetchNugget(nuggetID string, db *sql.DB) (*Nugget, error) {
+	sqlStatement := `
+		SELECT * FROM nuggets
+		WHERE id = ?
+	`
+
+	var nugget Nugget
+	row := db.QueryRow(sqlStatement, nuggetID)
+	err := row.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.UserID)
+	if err != nil {
+		return &Nugget{}, err
+	}
+
+	return &nugget, nil
 }
 
 func FetchAllNuggets(db *sql.DB) ([]Nugget, error) {
