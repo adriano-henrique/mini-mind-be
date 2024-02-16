@@ -32,6 +32,22 @@ func (nugget *Nugget) Save(db *sql.DB) (*Nugget, error) {
 	return FetchNugget(fmt.Sprint(nuggetID), db)
 }
 
+func (nugget *Nugget) UpdateNugget(db *sql.DB) (*Nugget, error) {
+	sqlStatement := `
+		UPDATE nuggets
+		SET key = ?, value = ?
+		WHERE id = ?
+	`
+
+	_, err := db.Exec(sqlStatement, &nugget.Key, &nugget.Value, &nugget.ID)
+	if err != nil {
+		fmt.Println("failed to update table nuggets, \n", err)
+		return &Nugget{}, err
+	}
+
+	return FetchNugget(nugget.ID, db)
+}
+
 func FetchNugget(nuggetID string, db *sql.DB) (*Nugget, error) {
 	sqlStatement := `
 		SELECT * FROM nuggets
@@ -42,6 +58,7 @@ func FetchNugget(nuggetID string, db *sql.DB) (*Nugget, error) {
 	row := db.QueryRow(sqlStatement, nuggetID)
 	err := row.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.UserID)
 	if err != nil {
+		fmt.Println("Failed to get query with id: ", nuggetID)
 		return &Nugget{}, err
 	}
 
@@ -75,4 +92,14 @@ func FetchAllNuggets(db *sql.DB) ([]Nugget, error) {
 	}
 
 	return nuggets, nil
+}
+
+func DeleteNugget(nuggetID string, db *sql.DB) error {
+	sqlStatement := "DELETE FROM nuggets WHERE id = ?"
+	_, err := db.Exec(sqlStatement, nuggetID)
+	if err != nil {
+		fmt.Println("failed to delete nugget with id: ", nuggetID)
+		return err
+	}
+	return nil
 }

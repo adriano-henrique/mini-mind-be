@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/adriano-henrique/mini-mind-be/internal/database"
@@ -30,7 +31,7 @@ func GetNuggetById(c *gin.Context) {
 
 	nuggetID := c.Param("id")
 	if nuggetID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Startup ID is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Nugget ID is required"})
 		return
 	}
 
@@ -81,6 +82,82 @@ func CreateNugget(c *gin.Context) {
 			"message": "Nugget created successfully",
 			"status":  "success",
 			"data":    savedNugget,
+		},
+	)
+}
+
+func UpdateNugget(c *gin.Context) {
+	db := database.DatabaseConnect()
+
+	var updatedNugget *models.Nugget
+	if err := c.ShouldBindJSON(&updatedNugget); err != nil {
+		fmt.Println("Failed to bind JSON")
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"message": err.Error(),
+				"status":  "failed",
+				"data":    nil,
+			},
+		)
+		return
+	}
+
+	updatedNugget, err := updatedNugget.UpdateNugget(db)
+	if err != nil {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  "failed",
+				"message": err.Error(),
+				"data":    nil,
+			},
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"status":  "success",
+			"message": "Nugget updated successfully",
+			"data":    updatedNugget,
+		},
+	)
+}
+
+func DeleteNugget(c *gin.Context) {
+	db := database.DatabaseConnect()
+	nuggetID := c.Param("id")
+	if nuggetID == "" {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":  "failed",
+				"message": "NuggetID is required",
+			},
+		)
+		return
+	}
+
+	err := models.DeleteNugget(nuggetID, db)
+	if err != nil {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"message": err.Error(),
+				"status":  "failed",
+			},
+		)
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"status":  "success",
+			"message": "Nugget deleted successfully",
+			"data":    nil,
 		},
 	)
 }
