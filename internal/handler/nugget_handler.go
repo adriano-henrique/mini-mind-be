@@ -62,6 +62,7 @@ func CreateNugget(c *gin.Context) {
 				"data":    nil,
 			},
 		)
+		return
 	}
 
 	savedNugget, err := input.Save(db)
@@ -74,6 +75,7 @@ func CreateNugget(c *gin.Context) {
 				"data":    nil,
 			},
 		)
+		return
 	}
 
 	c.JSON(

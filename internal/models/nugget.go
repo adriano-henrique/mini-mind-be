@@ -7,18 +7,18 @@ import (
 )
 
 type Nugget struct {
-	ID     string `json:"id"`
-	Key    string `json:"key"`
-	Value  string `json:"value"`
-	UserID string `json:"userID"`
+	ID       string `json:"id"`
+	Key      string `json:"key"`
+	Value    string `json:"value"`
+	FolderID string `json:"folderID"`
 }
 
 func (nugget *Nugget) Save(db *sql.DB) (*Nugget, error) {
 	sqlStatement := `
-		INSERT INTO nuggets (key, value, user_id)
+		INSERT INTO nuggets (key, value, folder_id)
 		VALUES (?, ?, ?)
 	`
-	result, err := db.Exec(sqlStatement, &nugget.Key, &nugget.Value, &nugget.UserID)
+	result, err := db.Exec(sqlStatement, &nugget.Key, &nugget.Value, &nugget.FolderID)
 	if err != nil {
 		fmt.Fprint(os.Stderr, "failed to insert value into table, \n", err)
 		return &Nugget{}, err
@@ -56,7 +56,7 @@ func FetchNugget(nuggetID string, db *sql.DB) (*Nugget, error) {
 
 	var nugget Nugget
 	row := db.QueryRow(sqlStatement, nuggetID)
-	err := row.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.UserID)
+	err := row.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.FolderID)
 	if err != nil {
 		fmt.Println("Failed to get query with id: ", nuggetID)
 		return &Nugget{}, err
@@ -78,7 +78,7 @@ func FetchAllNuggets(db *sql.DB) ([]Nugget, error) {
 	for rows.Next() {
 		var nugget Nugget
 
-		if err := rows.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.UserID); err != nil {
+		if err := rows.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.FolderID); err != nil {
 			fmt.Println("failed scannig row: ", err)
 			return nuggets, err
 		}
