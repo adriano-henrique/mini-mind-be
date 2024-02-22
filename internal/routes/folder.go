@@ -10,4 +10,8 @@ func folderGroupRouter(baseRouter *gin.RouterGroup) {
 
 	folder.POST("/create", handler.CreateFolder)
 	folder.GET("/all", handler.GetAllFolders)
+	folder.GET("/get/:id", handler.GetFolderByID)
+	folder.DELETE("/delete/:id", handler.DeleteFolder)
+	folder.PUT("/update", handler.UpdateFolder)
+	folder.PATCH("/update", handler.UpdateFolder)
 }

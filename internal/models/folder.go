@@ -32,6 +32,22 @@ func (folder *Folder) Save(db *sql.DB) (*Folder, error) {
 	return FetchFolder(fmt.Sprint(folderID), db)
 }
 
+func (folder *Folder) UpdateFolder(db *sql.DB) (*Folder, error) {
+	sqlStatement := `
+		UPDATE folder
+		SET folder_name = ?
+		WHERE id = ?
+	`
+
+	_, err := db.Exec(sqlStatement, &folder.FolderName, &folder.ID)
+	if err != nil {
+		fmt.Println("failed to update table folder, \n", err)
+		return &Folder{}, err
+	}
+
+	return FetchFolder(folder.ID, db)
+}
+
 func FetchFolder(folderID string, db *sql.DB) (*Folder, error) {
 	sqlStatement := `
 		SELECT * FROM folder
@@ -76,4 +92,14 @@ func FetchAllFolders(db *sql.DB) ([]Folder, error) {
 	}
 
 	return folders, nil
+}
+
+func DeleteFolder(folderID string, db *sql.DB) error {
+	sqlStatement := "DELETE FROM folder WHERE id = ?"
+	_, err := db.Exec(sqlStatement, folderID)
+	if err != nil {
+		fmt.Println("failed to delete nugget with id: ", folderID)
+		return err
+	}
+	return nil
 }
