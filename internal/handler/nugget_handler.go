@@ -50,6 +50,30 @@ func GetNuggetById(c *gin.Context) {
 	)
 }
 
+func GetNuggetByFolderID(c *gin.Context) {
+	db := database.DatabaseConnect()
+
+	folderID := c.Param("folder_id")
+	if folderID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Folder ID is required"})
+		return
+	}
+
+	nuggets, err := models.FetchNuggetsByFolderID(folderID, db)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"message": "Nuggets fetched successfully",
+			"status":  "success",
+			"data":    nuggets,
+		},
+	)
+}
+
 func CreateNugget(c *gin.Context) {
 	db := database.DatabaseConnect()
 	var input models.Nugget

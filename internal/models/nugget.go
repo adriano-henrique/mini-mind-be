@@ -65,6 +65,35 @@ func FetchNugget(nuggetID string, db *sql.DB) (*Nugget, error) {
 	return &nugget, nil
 }
 
+func FetchNuggetsByFolderID(folderID string, db *sql.DB) ([]Nugget, error) {
+	sqlStatement := "SELECT * FROM nuggets WHERE folder_id = ?"
+	rows, err := db.Query(sqlStatement, folderID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to execute query %v, \n", err)
+		return make([]Nugget, 0), err
+	}
+	defer rows.Close()
+
+	var nuggets []Nugget
+	for rows.Next() {
+		var nugget Nugget
+
+		if err := rows.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.FolderID); err != nil {
+			fmt.Println("failed scanning row: ", err)
+			return nuggets, err
+		}
+
+		nuggets = append(nuggets, nugget)
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error during row iteration:", err)
+		return nuggets, err
+	}
+
+	return nuggets, nil
+}
+
 func FetchAllNuggets(db *sql.DB) ([]Nugget, error) {
 	sqlStatement := "SELECT * FROM nuggets"
 	rows, err := db.Query(sqlStatement)
