@@ -18,6 +18,10 @@ func (nugget *Nugget) Save(db *sql.DB) (*Nugget, error) {
 		INSERT INTO nuggets (key, value, folder_id)
 		VALUES (?, ?, ?)
 	`
+	validationError := ValidateNuggetInsertion(nugget.Key, nugget.FolderID, db)
+	if validationError != nil {
+		return &Nugget{}, validationError
+	}
 	result, err := db.Exec(sqlStatement, &nugget.Key, &nugget.Value, &nugget.FolderID)
 	if err != nil {
 		fmt.Fprint(os.Stderr, "failed to insert value into table, \n", err)
@@ -59,6 +63,55 @@ func FetchNugget(nuggetID string, db *sql.DB) (*Nugget, error) {
 	err := row.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.FolderID)
 	if err != nil {
 		fmt.Println("Failed to get query with id: ", nuggetID)
+		return &Nugget{}, err
+	}
+
+	return &nugget, nil
+}
+
+func FetchAllNuggetsByKey(nuggetKey string, db *sql.DB) ([]Nugget, error) {
+	sqlStatement := `
+		SELECT * FROM nuggets
+		WHERE key = ?
+	`
+	rows, err := db.Query(sqlStatement, nuggetKey)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to execute query %v, \n", err)
+		return make([]Nugget, 0), err
+	}
+	defer rows.Close()
+
+	var nuggets []Nugget
+	for rows.Next() {
+		var nugget Nugget
+
+		if err := rows.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.FolderID); err != nil {
+			fmt.Println("failed scannig row: ", err)
+			return nuggets, err
+		}
+
+		nuggets = append(nuggets, nugget)
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error during row iteration:", err)
+		return nuggets, err
+	}
+
+	return nuggets, nil
+}
+
+func FetchNuggetByKeyAndFolder(nuggetKey string, nuggetFolderID string, db *sql.DB) (*Nugget, error) {
+	sqlStatement := `
+		SELECT * FROM nuggets
+		WHERE key = ?
+		AND folder_id = ?
+	`
+	var nugget Nugget
+	row := db.QueryRow(sqlStatement, nuggetKey, nuggetFolderID)
+	err := row.Scan(&nugget.ID, &nugget.Key, &nugget.Value, &nugget.FolderID)
+	if err != nil {
+		fmt.Println("Failed to get nuggest with key ? and folder ?", nuggetKey, nuggetFolderID)
 		return &Nugget{}, err
 	}
 

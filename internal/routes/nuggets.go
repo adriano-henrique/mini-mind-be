@@ -15,4 +15,5 @@ func nuggetsGroupRouter(baseRouter *gin.RouterGroup) {
 	nuggets.PATCH("/update", handler.UpdateNugget)
 	nuggets.DELETE("/delete/:id", handler.DeleteNugget)
 	nuggets.GET("/get_by_folder/:folder_id", handler.GetNuggetByFolderID)
+	nuggets.GET("/get_by_key/:key", handler.GetNuggetByKey)
 }
