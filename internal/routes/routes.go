@@ -12,6 +12,7 @@ func BuildRoutes() *gin.Engine {
 	versionRouter := r.Group("/api/v1")
 	nuggetsGroupRouter(versionRouter)
 	folderGroupRouter(versionRouter)
+	mindGroupRouter(versionRouter)
 
 	return r
 }
