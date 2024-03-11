@@ -8,13 +8,14 @@ import (
 
 // Mind is a struct that represents ALL nuggets for a user
 type FolderNuggets struct {
-	FolderID string `json:"folderID"`
-	Nuggets  []Nugget
+	FolderID   string   `json:"folderID"`
+	FolderName string   `json:"folderName"`
+	Nuggets    []Nugget `json:"nuggets"`
 }
 
 type Mind struct {
-	FolderNuggets []FolderNuggets
-	UserID        string `json:"userID"`
+	FolderNuggets []FolderNuggets `json:"folderNuggets"`
+	UserID        string          `json:"userID"`
 }
 
 func FetchMind(userID string, db *sql.DB) (*Mind, error) {
@@ -32,6 +33,7 @@ func FetchMind(userID string, db *sql.DB) (*Mind, error) {
 
 	var mind Mind
 	var folderNuggetMap = make(map[string][]Nugget)
+	var folderNameMap = make(map[string]string)
 	for rows.Next() {
 		var folder Folder
 		var nugget Nugget
@@ -43,6 +45,10 @@ func FetchMind(userID string, db *sql.DB) (*Mind, error) {
 			return &Mind{}, err
 		}
 
+		if _, ok := folderNameMap[folder.ID]; !ok {
+			folderNameMap[folder.ID] = folder.FolderName
+		}
+
 		if _, ok := folderNuggetMap[folder.ID]; !ok {
 			folderNuggetMap[folder.ID] = make([]Nugget, 0)
 		}
@@ -51,8 +57,9 @@ func FetchMind(userID string, db *sql.DB) (*Mind, error) {
 
 	for folderID, folderNugget := range folderNuggetMap {
 		mind.FolderNuggets = append(mind.FolderNuggets, FolderNuggets{
-			FolderID: folderID,
-			Nuggets:  folderNugget,
+			FolderID:   folderID,
+			FolderName: folderNameMap[folderID],
+			Nuggets:    folderNugget,
 		})
 	}
 
